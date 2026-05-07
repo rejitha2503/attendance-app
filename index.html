@@ -1,0 +1,2413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unnamalai Institute of Technology – AI Attendance</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ===================== CSS VARIABLES ===================== */
+:root {
+  --bg-deep: #030712;
+  --bg-card: rgba(255,255,255,0.035);
+  --bg-card2: rgba(15,25,50,0.7);
+  --border: rgba(99,179,237,0.18);
+  --border-glow: rgba(99,179,237,0.5);
+  --primary: #3b82f6;
+  --primary-glow: rgba(59,130,246,0.4);
+  --cyan: #06b6d4;
+  --cyan-glow: rgba(6,182,212,0.4);
+  --emerald: #10b981;
+  --emerald-glow: rgba(16,185,129,0.4);
+  --purple: #8b5cf6;
+  --purple-glow: rgba(139,92,246,0.4);
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --red-glow: rgba(239,68,68,0.4);
+  --text: #e2e8f0;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --font-head: 'Orbitron', monospace;
+  --font-body: 'Rajdhani', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+}
+
+/* ===================== RESET & BASE ===================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg-deep);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 800px 600px at 20% 10%, rgba(59,130,246,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 600px 500px at 80% 80%, rgba(139,92,246,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 400px 300px at 50% 50%, rgba(6,182,212,0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ===================== SCROLLBAR ===================== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+
+/* ===================== PAGES ===================== */
+.page { display: none; min-height: 100vh; position: relative; z-index: 1; }
+.page.active { display: flex; flex-direction: column; }
+
+/* ===================== LANDING ===================== */
+#landing {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background:
+    radial-gradient(ellipse 100% 100% at 50% 0%, rgba(59,130,246,0.12) 0%, transparent 60%);
+}
+.landing-logo {
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(59,130,246,0.25), rgba(139,92,246,0.25));
+  border: 2px solid var(--border-glow);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 50px;
+  margin: 0 auto 24px;
+  box-shadow: 0 0 40px var(--primary-glow), 0 0 80px rgba(59,130,246,0.1);
+  animation: logoPulse 3s ease-in-out infinite;
+}
+@keyframes logoPulse {
+  0%,100% { box-shadow: 0 0 40px var(--primary-glow), 0 0 80px rgba(59,130,246,0.1); }
+  50% { box-shadow: 0 0 60px var(--cyan-glow), 0 0 120px rgba(6,182,212,0.15); }
+}
+.landing-title {
+  font-family: var(--font-head);
+  font-size: clamp(22px, 4vw, 38px);
+  font-weight: 900;
+  letter-spacing: 3px;
+  background: linear-gradient(135deg, #93c5fd, #e2e8f0, #c4b5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 6px;
+}
+.landing-sub {
+  font-family: var(--font-head);
+  font-size: clamp(11px, 2vw, 14px);
+  letter-spacing: 6px;
+  color: var(--cyan);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.landing-tag {
+  font-size: 13px;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  margin-bottom: 50px;
+  text-transform: uppercase;
+}
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto 30px;
+  padding: 0 20px;
+}
+.role-btn {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+.role-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+  border-radius: 16px;
+}
+.role-btn.student::before { background: linear-gradient(135deg, rgba(59,130,246,0.15), transparent); }
+.role-btn.staff::before { background: linear-gradient(135deg, rgba(16,185,129,0.15), transparent); }
+.role-btn.admin::before { background: linear-gradient(135deg, rgba(139,92,246,0.15), transparent); }
+.role-btn.parent::before { background: linear-gradient(135deg, rgba(245,158,11,0.15), transparent); }
+.role-btn:hover::before { opacity: 1; }
+.role-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 30px rgba(99,179,237,0.2);
+  border-color: var(--border-glow);
+}
+.role-icon { font-size: 36px; margin-bottom: 10px; display: block; }
+.role-label {
+  font-family: var(--font-head);
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+/* ===================== LOGIN ===================== */
+#login-page {
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.login-box {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(10,20,40,0.8);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 40px 36px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 0 60px rgba(59,130,246,0.12);
+  animation: slideUp 0.4s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.login-logo { font-size: 40px; text-align: center; margin-bottom: 8px; }
+.login-title {
+  font-family: var(--font-head);
+  font-size: 16px;
+  letter-spacing: 3px;
+  text-align: center;
+  color: var(--cyan);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+.login-role-badge {
+  display: inline-block;
+  padding: 4px 16px;
+  border-radius: 20px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0 auto 28px;
+  display: block;
+  text-align: center;
+}
+.inp-group { margin-bottom: 18px; }
+.inp-group label {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.inp-group input {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.inp-group input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+.btn-login {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--purple));
+  color: white;
+  font-family: var(--font-head);
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 20px var(--primary-glow);
+  margin-bottom: 16px;
+}
+.btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 30px var(--primary-glow); }
+.login-demo { font-size: 12px; color: var(--text-muted); text-align: center; }
+.back-link { font-size: 12px; color: var(--cyan); text-align: center; cursor: pointer; margin-top: 12px; letter-spacing: 1px; }
+.back-link:hover { color: var(--text); }
+
+/* ===================== APP SHELL ===================== */
+#app { display: none; flex-direction: row; min-height: 100vh; }
+#app.active { display: flex; }
+
+/* ===================== SIDEBAR ===================== */
+.sidebar {
+  width: 250px;
+  min-height: 100vh;
+  background: rgba(5,10,25,0.95);
+  border-right: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  z-index: 100;
+  transition: transform 0.3s;
+}
+.sidebar-brand {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-brand-logo { font-size: 28px; margin-bottom: 4px; }
+.sidebar-brand-name {
+  font-family: var(--font-head);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--cyan);
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+.sidebar-user {
+  padding: 16px 20px;
+  background: rgba(59,130,246,0.06);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sidebar-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.sidebar-user-name { font-weight: 600; font-size: 14px; color: var(--text); }
+.sidebar-user-role { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+.sidebar-nav { padding: 16px 12px; flex: 1; overflow-y: auto; }
+.nav-section-title {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 10px 10px 6px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 2px;
+  font-size: 14px;
+  color: var(--text-dim);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+.nav-item:hover { background: rgba(59,130,246,0.12); color: var(--text); }
+.nav-item.active { background: rgba(59,130,246,0.2); color: var(--primary); border-left: 3px solid var(--primary); }
+.nav-item .nav-icon { font-size: 18px; width: 22px; text-align: center; }
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+.btn-logout {
+  width: 100%;
+  padding: 10px;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 10px;
+  color: var(--red);
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-logout:hover { background: rgba(239,68,68,0.2); }
+
+/* ===================== MAIN CONTENT ===================== */
+.main-content {
+  margin-left: 250px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.topbar {
+  height: 64px;
+  background: rgba(5,10,25,0.95);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(20px);
+}
+.topbar-title {
+  font-family: var(--font-head);
+  font-size: 16px;
+  letter-spacing: 2px;
+  color: var(--text);
+}
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.topbar-date { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); }
+.notif-btn {
+  position: relative;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+.notif-btn:hover { background: rgba(59,130,246,0.15); border-color: var(--primary); }
+.notif-dot {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 8px; height: 8px;
+  background: var(--red);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--red-glow);
+}
+.content-area { padding: 28px; flex: 1; overflow-y: auto; }
+
+/* ===================== PANEL TABS ===================== */
+.panel { display: none; animation: fadeIn 0.3s ease; }
+.panel.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ===================== STAT CARDS ===================== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  opacity: 0.07;
+  transform: translate(20px, -20px);
+}
+.stat-card.blue::after { background: var(--primary); }
+.stat-card.cyan::after { background: var(--cyan); }
+.stat-card.green::after { background: var(--emerald); }
+.stat-card.purple::after { background: var(--purple); }
+.stat-card.red::after { background: var(--red); }
+.stat-card:hover { transform: translateY(-3px); border-color: var(--border-glow); }
+.stat-icon { font-size: 28px; margin-bottom: 10px; display: block; }
+.stat-label { font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+.stat-value { font-family: var(--font-head); font-size: 28px; font-weight: 700; }
+.stat-value.blue { color: var(--primary); text-shadow: 0 0 20px var(--primary-glow); }
+.stat-value.cyan { color: var(--cyan); text-shadow: 0 0 20px var(--cyan-glow); }
+.stat-value.green { color: var(--emerald); text-shadow: 0 0 20px var(--emerald-glow); }
+.stat-value.purple { color: var(--purple); text-shadow: 0 0 20px var(--purple-glow); }
+.stat-value.red { color: var(--red); text-shadow: 0 0 20px var(--red-glow); }
+.stat-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* ===================== GRID ===================== */
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; margin-bottom: 24px; }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+
+/* ===================== GLASS CARD ===================== */
+.glass-card {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  backdrop-filter: blur(10px);
+  margin-bottom: 20px;
+}
+.card-title {
+  font-family: var(--font-head);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan-glow);
+}
+
+/* ===================== BUNK ANALYZER ===================== */
+.bunk-box {
+  text-align: center;
+  padding: 20px;
+}
+.bunk-indicator {
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px;
+  font-size: 40px;
+  transition: all 0.5s;
+}
+.bunk-indicator.safe {
+  background: rgba(16,185,129,0.15);
+  border: 3px solid var(--emerald);
+  box-shadow: 0 0 30px var(--emerald-glow);
+}
+.bunk-indicator.unsafe {
+  background: rgba(239,68,68,0.15);
+  border: 3px solid var(--red);
+  box-shadow: 0 0 30px var(--red-glow);
+  animation: dangerPulse 2s infinite;
+}
+@keyframes dangerPulse {
+  0%,100% { box-shadow: 0 0 30px var(--red-glow); }
+  50% { box-shadow: 0 0 50px rgba(239,68,68,0.7); }
+}
+.bunk-answer { font-family: var(--font-head); font-size: 28px; font-weight: 900; margin-bottom: 8px; }
+.bunk-answer.yes { color: var(--emerald); }
+.bunk-answer.no { color: var(--red); }
+.bunk-caption { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+/* ===================== PROGRESS RING ===================== */
+.ring-wrap {
+  position: relative;
+  width: 100px; height: 100px;
+  margin: 0 auto 14px;
+}
+.ring-wrap svg { transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 8; }
+.ring-fg { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+.ring-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  text-align: center;
+}
+.ring-pct { font-family: var(--font-head); font-size: 18px; font-weight: 700; }
+.ring-lbl { font-size: 10px; color: var(--text-muted); letter-spacing: 1px; }
+
+/* ===================== TABLE ===================== */
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+.data-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text-dim);
+}
+.data-table tr:hover td { background: rgba(59,130,246,0.04); }
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.status-badge.P, .status-badge.present { background: rgba(16,185,129,0.15); color: var(--emerald); border: 1px solid rgba(16,185,129,0.3); }
+.status-badge.A, .status-badge.absent { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.status-badge.L, .status-badge.leave { background: rgba(245,158,11,0.15); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+.status-badge.late { background: rgba(139,92,246,0.15); color: var(--purple); border: 1px solid rgba(139,92,246,0.3); }
+.status-badge.pending { background: rgba(245,158,11,0.15); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+.status-badge.approved { background: rgba(16,185,129,0.15); color: var(--emerald); border: 1px solid rgba(16,185,129,0.3); }
+.status-badge.rejected { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.status-badge.low { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.status-badge.medium { background: rgba(245,158,11,0.15); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+.status-badge.high { background: rgba(16,185,129,0.15); color: var(--emerald); border: 1px solid rgba(16,185,129,0.3); }
+
+/* ===================== HEATMAP ===================== */
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  margin-top: 12px;
+}
+.heat-day {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  min-width: 20px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  position: relative;
+}
+.heat-day:hover { transform: scale(1.3); z-index: 5; }
+.heat-day.present { background: var(--emerald); box-shadow: 0 0 6px var(--emerald-glow); }
+.heat-day.absent { background: var(--red); box-shadow: 0 0 6px var(--red-glow); }
+.heat-day.leave { background: var(--amber); }
+.heat-day.empty { background: rgba(255,255,255,0.04); }
+.heat-day.today { outline: 2px solid var(--cyan); outline-offset: 1px; }
+.heatmap-months {
+  display: flex;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+
+/* ===================== FORM ===================== */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+.form-group select option { background: #0a1020; color: var(--text); }
+.form-group textarea { resize: vertical; min-height: 80px; }
+.btn-primary {
+  padding: 11px 28px;
+  background: linear-gradient(135deg, var(--primary), var(--cyan));
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px var(--primary-glow);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 25px var(--primary-glow); }
+.btn-success {
+  padding: 8px 18px;
+  background: rgba(16,185,129,0.15);
+  border: 1px solid rgba(16,185,129,0.4);
+  border-radius: 8px;
+  color: var(--emerald);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-success:hover { background: rgba(16,185,129,0.25); }
+.btn-danger {
+  padding: 8px 18px;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 8px;
+  color: var(--red);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+/* ===================== SECTION HEADER ===================== */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.section-title {
+  font-family: var(--font-head);
+  font-size: 18px;
+  letter-spacing: 2px;
+  color: var(--text);
+}
+.section-title span { color: var(--cyan); }
+
+/* ===================== NOTIFICATION PANEL ===================== */
+.notif-panel {
+  position: fixed;
+  top: 0; right: 0;
+  width: 340px;
+  height: 100vh;
+  background: rgba(5,10,25,0.97);
+  border-left: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  z-index: 200;
+  transform: translateX(100%);
+  transition: transform 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+.notif-panel.open { transform: translateX(0); }
+.notif-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-head);
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--cyan);
+}
+.notif-close { cursor: pointer; font-size: 20px; color: var(--text-muted); }
+.notif-close:hover { color: var(--text); }
+.notif-list { flex: 1; overflow-y: auto; padding: 12px; }
+.notif-item {
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.notif-item:hover { background: rgba(59,130,246,0.08); }
+.notif-item.unread { border-left: 3px solid var(--primary); }
+.notif-item-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.notif-item-body { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+.notif-item-time { font-size: 11px; color: var(--text-muted); margin-top: 6px; font-family: var(--font-mono); }
+
+/* ===================== ATTENDANCE MARKING ===================== */
+.student-list-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+  margin-bottom: 8px;
+  transition: background 0.2s;
+}
+.student-list-row:hover { background: rgba(59,130,246,0.05); }
+.student-num { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); width: 80px; }
+.student-nm { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
+.student-dept { font-size: 12px; color: var(--text-muted); width: 60px; }
+.att-btns { display: flex; gap: 6px; }
+.att-btn {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.att-btn.P { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: var(--emerald); }
+.att-btn.A { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: var(--red); }
+.att-btn.L { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); color: var(--amber); }
+.att-btn.active-P { background: var(--emerald); color: #fff; box-shadow: 0 0 12px var(--emerald-glow); }
+.att-btn.active-A { background: var(--red); color: #fff; box-shadow: 0 0 12px var(--red-glow); }
+.att-btn.active-L { background: var(--amber); color: #fff; }
+
+/* ===================== RISK PANEL ===================== */
+.risk-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.risk-bar:last-child { border-bottom: none; }
+.risk-name { width: 130px; font-size: 13px; color: var(--text); font-weight: 600; }
+.risk-dept { width: 50px; font-size: 11px; color: var(--text-muted); }
+.risk-progress-wrap { flex: 1; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+.risk-progress-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+.risk-pct { width: 45px; text-align: right; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); }
+
+/* ===================== QR CODE SIMULATION ===================== */
+.qr-display {
+  width: 160px; height: 160px;
+  background: white;
+  border-radius: 12px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #000;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.qr-scan-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: rgba(0,200,255,0.8);
+  box-shadow: 0 0 10px cyan;
+  animation: scanLine 2s ease-in-out infinite;
+}
+@keyframes scanLine {
+  0% { top: 0; }
+  50% { top: calc(100% - 2px); }
+  100% { top: 0; }
+}
+
+/* ===================== AI INSIGHT BOX ===================== */
+.ai-insight {
+  background: rgba(139,92,246,0.08);
+  border: 1px solid rgba(139,92,246,0.25);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.ai-insight-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.ai-insight-text { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+.ai-insight-title { font-weight: 700; color: var(--purple); margin-bottom: 4px; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+
+/* ===================== TWIN SIMULATOR ===================== */
+.sim-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+.sim-btn.regular { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.4); color: var(--emerald); }
+.sim-btn.frequent { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: var(--red); }
+.sim-btn.smart { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.4); color: var(--primary); }
+.sim-btn:hover { transform: translateY(-2px); }
+
+/* ===================== MOBILE ===================== */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(5,10,25,0.97);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  z-index: 100;
+  padding: 8px 0 env(safe-area-inset-bottom, 8px);
+}
+.mobile-nav-items {
+  display: flex;
+  justify-content: space-around;
+}
+.mobile-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+.mobile-nav-btn .ico { font-size: 20px; }
+.mobile-nav-btn.active { color: var(--primary); }
+.hamburger { display: none; cursor: pointer; font-size: 22px; color: var(--text-muted); }
+
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main-content { margin-left: 0; }
+  .mobile-nav { display: block; }
+  .hamburger { display: block; }
+  .content-area { padding: 16px; padding-bottom: 80px; }
+  .form-row { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ===================== MISC ===================== */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+.empty-state .emoji { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.chip.dept-CSE { background: rgba(59,130,246,0.15); color: var(--primary); }
+.chip.dept-ECE { background: rgba(6,182,212,0.15); color: var(--cyan); }
+.chip.dept-EEE { background: rgba(245,158,11,0.15); color: var(--amber); }
+.chip.dept-MECH { background: rgba(139,92,246,0.15); color: var(--purple); }
+.chip.dept-AIDS { background: rgba(16,185,129,0.15); color: var(--emerald); }
+.chip.dept-CYB { background: rgba(239,68,68,0.1); color: var(--red); }
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; backdrop-filter: blur(2px); }
+.overlay.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ============ NOTIFICATION PANEL ============ -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-header">
+    <span>🔔 Notifications</span>
+    <span class="notif-close" onclick="toggleNotif()">✕</span>
+  </div>
+  <div class="notif-list" id="notifList"></div>
+</div>
+<div class="overlay" id="overlay" onclick="closeSidebar();closeNotif()"></div>
+
+<!-- ============ LANDING PAGE ============ -->
+<div class="page active" id="landing">
+  <div style="padding: 60px 20px; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center;">
+    <div class="landing-logo">🎓</div>
+    <div class="landing-title">UNNAMALAI</div>
+    <div class="landing-sub">Institute of Technology</div>
+    <div class="landing-tag">AI Powered Attendance Management System</div>
+    <div style="max-width:440px; width:100%; padding: 0 20px;">
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:32px; letter-spacing:0.5px;">Select your role to continue</p>
+      <div class="role-grid">
+        <div class="role-btn student" onclick="goLogin('student')">
+          <span class="role-icon">🎓</span>
+          <div class="role-label">Student</div>
+        </div>
+        <div class="role-btn staff" onclick="goLogin('staff')">
+          <span class="role-icon">👨‍🏫</span>
+          <div class="role-label">Staff</div>
+        </div>
+        <div class="role-btn admin" onclick="goLogin('admin')">
+          <span class="role-icon">👩‍💼</span>
+          <div class="role-label">Admin</div>
+        </div>
+        <div class="role-btn parent" onclick="goLogin('parent')">
+          <span class="role-icon">👨‍👩‍👧</span>
+          <div class="role-label">Parent</div>
+        </div>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:20px; letter-spacing:1px;">DEPT: CSE · ECE · EEE · MECH · AIDS · CYBER SECURITY</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LOGIN PAGE ============ -->
+<div class="page" id="login-page">
+  <div style="display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px;">
+    <div class="login-box">
+      <div class="login-logo" id="loginEmoji">🎓</div>
+      <div class="login-title">UNNAMALAI INSTITUTE</div>
+      <div class="login-role-badge" id="loginRoleBadge" style="background:rgba(59,130,246,0.15); color:var(--primary); font-size:11px; letter-spacing:2px; text-transform:uppercase;">STUDENT LOGIN</div>
+      <div class="inp-group">
+        <label id="loginLabel1">Register Number</label>
+        <input type="text" id="loginUser" placeholder="e.g. REG2021001">
+      </div>
+      <div class="inp-group">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="Enter password">
+      </div>
+      <button class="btn-login" onclick="doLogin()">LOGIN →</button>
+      <div class="login-demo" id="loginDemo">Demo: student1 / password</div>
+      <div class="back-link" onclick="showPage('landing')">← Back to Role Selection</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP SHELL ============ -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-logo">🎓</div>
+      <div class="sidebar-brand-name">UNNAMALAI<br>INSTITUTE OF TECHNOLOGY</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">🎓</div>
+      <div>
+        <div class="sidebar-user-name" id="sidebarName">Student</div>
+        <div class="sidebar-user-role" id="sidebarRole">Student</div>
+      </div>
+    </div>
+    <div class="sidebar-nav" id="sidebarNav"></div>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <span class="hamburger" onclick="toggleSidebar()">☰</span>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="topbarDate"></div>
+        <div class="notif-btn" onclick="toggleNotif()">
+          🔔
+          <div class="notif-dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-area" id="contentArea">
+
+      <!-- ===== STUDENT PANELS ===== -->
+      <div class="panel" id="panel-s-dashboard">
+        <div class="section-header">
+          <div class="section-title">Student <span>Dashboard</span></div>
+        </div>
+        <div class="stats-grid" id="studentStats"></div>
+        <div class="grid-2">
+          <div class="glass-card">
+            <div class="card-title"><span class="dot"></span>Attendance Prediction</div>
+            <canvas id="chartPredict" height="180"></canvas>
+          </div>
+          <div class="glass-card">
+            <div class="card-title"><span class="dot"></span>Safe to Bunk Today?</div>
+            <div class="bunk-box" id="bunkBox"></div>
+          </div>
+        </div>
+        <div class="grid-4" id="aiMetricsGrid"></div>
+        <div class="glass-card">
+          <div class="card-title"><span class="dot"></span>Recent Attendance</div>
+          <div style="overflow-x:auto;">
+            <table class="data-table" id="recentAttTable">
+              <thead><tr><th>Date</th><th>Subject</th><th>Status</th><th>Type</th></tr></thead>
+              <tbody id="recentAttBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="glass-card">
+          <div class="card-title"><span class="dot"></span>AI Insights & Smart Suggestions</div>
+          <div id="aiInsights"></div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-s-attendance">
+        <div class="section-header">
+          <div class="section-title">My <span>Attendance</span></div>
+        </div>
+        <div class="glass-card">
+          <div class="card-title"><span class="dot"></span>Monthly Heatmap Calendar</div>
+          <div id="heatmapCal"></div>
+        </div>
+        <div class="glass-card">
+          <div class="card-title"><span class="dot"></span>Subject-wise Attendance</div>
+          <canvas id="chartSubject" height="200"></canvas>
+        </div>
+        <div class="glass-card">
+          <div class="card-title"><span class="dot"></span>Attendance Records</div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead><tr><th>Date</th><th>Subject</th><th>Staff</th><th>Status</th><th>Type</th></tr></thead>
+              <tbody id="fullAttBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-s-leave">
+        <div class="section-header">
+          <div class="section-title">Leave / <span>OD</span></div>
+        </div>
+        <div class="grid-2">
+          <div class="glass-card">
+            <div class="card-title"><span class="dot"></span>Apply Leave</div>
+            <div class="form-group">
+              <label>Leave Type</label>
+              <select id="leaveType">
+                <option>Medical Leave</option>
+                <option>Personal Leave</option>
+                <option>OD (On Duty)</option>
+                <option>Emergency</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>From Date</label>
+                <input type="date" id="leaveFrom">
+              </div>
+              <div class="form-group">
+                <label>To Date</label>
+                <input type="date" id="leaveTo">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Reason</label>
+              <textarea id="leaveReason" placeholder="Describe your reason..."></textarea>
+            </div>
+            <button class="btn-primary" onclick="applyLeave()">Submit Application</button>
+          </div>
+          <div class="glass-card">
+            <div class="card-title"><span class="dot"></span>Leave History</div>
+            <table class="data-table">
+              <thead><tr><th>Type</th><th>From</th><th>To</th><th>Status</th></tr></thead>
+              <tbody id="leaveHistBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-s-timetable">
+        <div class="section-header">
+          <div class="section-title">My <span>Timetable</span></div>
+        </div>
+        <div class="glass-card">
+          <div class="card-title"><span class="dot"></span>Weekly Schedule</div>
+          <div style="overflow-x:auto;">
+            <table class="data-table" id="timetableTable">
+              <thead id="ttHead"></thead>
+              <tbody id="ttBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-s-predict">
+        <div class="section-header">
+          <div class="section-title">AI <span>Prediction Engine</span></div>
+        </div>
+        <div class="grid-2">
+          <div class="glass-card">
+            <div class="card-title"><span class="dot"></span>Digital Twin Simulator</div>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Simulate different attendance behaviors and see projected outcomes</p>
+            <div>
+              <button class="sim-btn regular" onclick="runSimulation('regular')">📈 Regular Attendance</button>
+              <button class="sim-btn frequent" onclick="runSimulation('bunk')">📉 Frequent Bunks</button>
+              <button class="sim-btn smart" onclick="runSimulation('smart')">🧠 Smart Strategy</button>
+            </div>
+            <canvas id="chartSimulation" height="200"></canvas>
+            <div id="simResult" style="margin-top:12px;"></div>
+          </div>
+          <div class="glass-card">
+            <div class="card-title"><span class="dot"></span>Root Cause Analysis</div>
+            <div id="rootCauseBox"></div>
+          </div>
+        </div>
+        <div class="glass-card">
+          <div class="card-title"><span class="dot"></span>Attendance Recovery Calculator</div>
+          <div style="display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap; margin-bottom:16px;">
+            <div class="form-group" style="margin:0; flex:1; min-width:140px;">
+              <label>Target %</label>
+              <input type="number" id="targetPct" value="80" min="75" max="100">
+            </div>
+            <div class="form-group" style="margin:0; flex:1; min-width:140px;">
+              <label>Working Days Left</label>
+              <input type="number" id="workingDaysLeft" value="30" min="1">
+            </div>
+            <button class="btn-primary" onclick="calcRecovery()">Calculate</button>
+          </div>
+          <div id="recoveryResult"></div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-s-notifications">
+        <div class="section-header">
+          <div class="section-title">My <span>Notifications</span></div>
+        </div>
+        <div class="glass-card">
+          <div id="fullNotifList"></div>
+        </div>
+      </div>
+
+      <!-- ===== STAFF PANELS ===== -->
+      <div class="panel" id="panel-t-dashboard">
+        <div class="section-header">
+          <div class="section-title">Staff <span>Dashboard</span></div>
+        </div>
+        <div class="stats-grid" id="staffStats"></div>
+        <div class="grid-2">
+          <div class="glass-card">
+            <div class="card-title"><span class="dot"></span>Today's Class Attendance</div>
+            <canvas id="chartStaffPie" height="200"></canvas>
+          </div>
+          <div class="glass-card">
+            <div class="card-title"><span class="dot"></span>Pending Leave Requests</div>
+            <table class="data-table">
+              <thead><tr><th>Student</th><th>Type</th><th>Dates</th><th>Action</th></tr></thead>
+              <tbody id="pendingLeaveBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="glass-card">
+          <div class="card-title"><span class="dot"></span>Weekly Attendance Trend</div>
+          <canvas id="chartWeekTrend" height="160"></canvas>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-t-mark">
+        <div class="section-header">
+          <div class="section-title">Mark <span>Attendance</span></div>
+        </div>
+        <div class="glass-card">
+          <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; align-items:flex-end;">
+            <div class="form-group" style="margin:0; flex:1; min-width:140px;">
+              <label>Department</label>
+              <select id="markDept" onchange="loadMarkList()">
+                <option>CSE</option><option>ECE</option><option>EEE</option><option>MECH</option><option>AIDS</option><option>Cyber Security</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0; flex:1; min-width:140px;">
+              <label>Subject</label>
+              <select id="markSubject">
+                <option>Data Structures</option><option>Discrete Mathematics</option><option>OS</option><option>DBMS</option><option>CN</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0; flex:1; min-width:120px;">
+              <label>Period</label>
+              <select id="markPeriod">
+                <option>1st Period</option><option>2nd Period</option><option>3rd Period</option><option>4th Period</option>
+              </select>
+            </div>
+            <button class="btn-primary" onclick="markAll('P')" style="margin-bottom:0;">✅ All Present</button>
+          </div>
+          <div id="markListContainer"></div>
+          <div style="margin-top:16px; display:flex; gap:12px;">
+            <button class="btn-primary" onclick="saveAttendance()">💾 Save Attendance</button>
+          </div>
+        </div>
+        <div class="glass-card">
+          <div class="card-title"><span class="dot"></span>QR Code Attendance</div>
+          <div style="display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
+            <div style="text-align:center;">
+              <div class="qr-display">
+                <div style="font-size:60px;">▦</div>
+                <div class="qr-scan-line"></div>
+              </div>
+              <div style="font-size:12px; color:var(--text-muted); letter-spacing:1px;">QR Code Active</div>
+            </div>
+            <div>
+              <div style="font-size:14px; color:var(--text); margin-bottom:10px; font-weight:600;">Class: CSE-III-A</div>
+              <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">📍 Expires in: <span style="color:var(--cyan); font-family:var(--font-mono);" id="qrTimer">04:59</span></div>
+              <div style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">👥 Scanned: <span style="color:var(--emerald);">18 / 60</span></div>
+              <button class="btn-primary" onclick="regenerateQR()">🔄 Regenerate QR</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-t-leave">
+        <div class="section-header">
+          <div class="section-title">Leave <span>Requests</span></div>
+        </div>
+        <div class="glass-card">
+          <table class="data-table">
+            <thead><tr><th>Student</th><th>Reg No</th><th>Type</th><th>From</th><th>To</th><th>Reason</th><th>Action</th></tr></thead>
+            <tbody id="staffLeaveBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-t-classlog">
+        <div class="section-header">
+          <div class="section-title">Daily <span>Class Log</span></div>
+        </div>
+        <div class="glass-card">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Subject</label>
+              <select id="logSubject">
+                <option>Data Structures</option><option>Discrete Mathematics</option><option>OS</option><option>DBMS</option><option>CN</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="logDate">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Topic Covered</label>
+            <input type="text" id="logTopic" placeholder="e.g. Binary Search Trees – Insertion and Deletion">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Difficulty Level</label>
+              <select id="logDifficulty">
+                <option>Easy</option><option selected>Medium</option><option>Hard</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Student Understanding</label>
+              <select id="logUnderstanding">
+                <option>Excellent</option><option selected>Good</option><option>Average</option><option>Poor</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Notes / Feedback</label>
+            <textarea id="logNotes" placeholder="Any observations, homework assigned, etc."></textarea>
+          </div>
+          <button class="btn-primary" onclick="saveClassLog()">💾 Save Class Log</button>
+        </div>
+        <div class="glass-card">
+          <div class="card-title"><span class="dot"></span>Recent Class Logs</div>
+          <table class="data-table">
+            <thead><tr><th>Date</th><th>Subject</th><th>Topic</th><th>Difficulty</th></tr></thead>
+            <tbody id="classLogBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-t-analytics">
+        <div class="section-header">
+          <div class="section-title">Student <span>Analytics</span></div>
+        </div>
+        <div class="glass-card">
+          <div class="card-title"><span class="dot"></span>Risk Students – Low Attendance</div>
+          <div id="riskStudentsStaff"></div>
+        </div>
+        <div class="glass-card">
+          <div class="card-title"><span class="dot"></span>Attendance by Subject</div>
+          <canvas id="chartStaffSubj" height="200"></canvas>
+        </div>
+      </div>
+
+      <!-- ===== ADMIN PANELS ===== -->
+      <div class="panel" id="panel-a-dashboard">
+        <div class="section-header">
+          <div class="section-title">Admin <span>Dashboard</span></div>
+        </div>
+        <div class="stats-grid" id="adminStats"></div>
+        <div class="grid-2">
+          <div class="glass-card">
+            <div class="card-title"><span class="dot"></span>Department Attendance Comparison</div>
+            <canvas id="chartDeptBar" height="200"></canvas>
+          </div>
+          <div class="glass-card">
+            <div class="card-title"><span class="dot"></span>Monthly Trend</div>
+            <canvas id="chartMonthLine" height="200"></canvas>
+          </div>
+        </div>
+        <div class="glass-card">
+          <div class="card-title"><span class="dot"></span>Risk Students (All Departments)</div>
+          <div id="adminRiskPanel"></div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-a-students">
+        <div class="section-header">
+          <div class="section-title">Student <span>Management</span></div>
+          <button class="btn-primary" onclick="showAddStudent()">+ Add Student</button>
+        </div>
+        <div class="glass-card">
+          <div style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+            <input type="text" placeholder="Search student..." id="studentSearch" style="flex:1; min-width:200px; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:9px 14px; color:var(--text); font-family:var(--font-body); outline:none;" oninput="filterStudents()">
+            <select id="deptFilter" style="background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:9px 14px; color:var(--text); font-family:var(--font-body); outline:none;" onchange="filterStudents()">
+              <option value="">All Depts</option>
+              <option>CSE</option><option>ECE</option><option>EEE</option><option>MECH</option><option>AIDS</option><option>Cyber Security</option>
+            </select>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead><tr><th>Reg No</th><th>Name</th><th>Department</th><th>Attendance%</th><th>Discipline</th><th>Risk</th></tr></thead>
+              <tbody id="adminStudentBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-a-staff">
+        <div class="section-header">
+          <div class="section-title">Staff <span>Management</span></div>
+        </div>
+        <div class="glass-card">
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead><tr><th>Staff Code</th><th>Name</th><th>Department</th><th>Classes Today</th><th>Status</th></tr></thead>
+              <tbody id="adminStaffBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-a-reports">
+        <div class="section-header">
+          <div class="section-title">Reports & <span>Export</span></div>
+        </div>
+        <div class="grid-2">
+          <div class="glass-card">
+            <div class="card-title"><span class="dot"></span>Generate Report</div>
+            <div class="form-group">
+              <label>Report Type</label>
+              <select>
+                <option>Department-wise Attendance</option>
+                <option>Student Risk Report</option>
+                <option>Monthly Summary</option>
+                <option>Leave Analysis</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>From</label>
+                <input type="date" id="rptFrom">
+              </div>
+              <div class="form-group">
+                <label>To</label>
+                <input type="date" id="rptTo">
+              </div>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn-primary" onclick="exportReport('pdf')">📄 Export PDF</button>
+              <button class="btn-primary" onclick="exportReport('csv')" style="background:linear-gradient(135deg,var(--emerald),var(--cyan));">📊 Export CSV</button>
+            </div>
+          </div>
+          <div class="glass-card">
+            <div class="card-title"><span class="dot"></span>Quick Stats</div>
+            <div id="quickStatsPanel"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PARENT PANELS ===== -->
+      <div class="panel" id="panel-p-dashboard">
+        <div class="section-header">
+          <div class="section-title">Parent <span>Dashboard</span></div>
+        </div>
+        <div class="stats-grid" id="parentStats"></div>
+        <div class="grid-2">
+          <div class="glass-card">
+            <div class="card-title"><span class="dot"></span>Child Attendance Trend</div>
+            <canvas id="chartParentTrend" height="200"></canvas>
+          </div>
+          <div class="glass-card">
+            <div class="card-title"><span class="dot"></span>Recent Alerts</div>
+            <div id="parentAlerts"></div>
+          </div>
+        </div>
+        <div class="glass-card">
+          <div class="card-title"><span class="dot"></span>Leave History</div>
+          <table class="data-table">
+            <thead><tr><th>Type</th><th>From</th><th>To</th><th>Status</th></tr></thead>
+            <tbody id="parentLeaveBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- end contentArea -->
+  </div><!-- end main-content -->
+
+  <!-- Mobile Nav -->
+  <nav class="mobile-nav" id="mobileNav">
+    <div class="mobile-nav-items" id="mobileNavItems"></div>
+  </nav>
+</div><!-- end app -->
+
+<script>
+// ===================== DATA =====================
+const DEPARTMENTS = ['CSE','ECE','EEE','MECH','AIDS','Cyber Security'];
+const SUBJECTS = {
+  CSE: ['Data Structures','Discrete Mathematics','OS','DBMS','CN'],
+  ECE: ['Digital Electronics','Signals & Systems','VLSI','Microprocessors','Communication'],
+  EEE: ['Electric Circuits','Power Systems','Machines','Control Systems','Power Electronics'],
+  MECH: ['Engineering Mechanics','Thermodynamics','Fluid Mechanics','CAD/CAM','Manufacturing'],
+  AIDS: ['Machine Learning','Deep Learning','NLP','Big Data','Computer Vision'],
+  'Cyber Security': ['Cryptography','Network Security','Ethical Hacking','Forensics','Cloud Security']
+};
+const STAFF_NAMES = ['Dr. R. Priya','Dr. S. Kumar','Prof. M. Anand','Dr. K. Lakshmi','Prof. V. Rajan','Dr. T. Meena','Prof. A. Chandran','Dr. P. Suresh','Prof. L. Devi','Dr. N. Gopal','Prof. B. Aarthi','Dr. C. Ramesh','Prof. D. Kavya','Dr. E. Sanjay','Prof. F. Nisha','Dr. G. Karthik','Prof. H. Selvi','Dr. I. Balan','Prof. J. Rekha','Dr. K. Vijay','Prof. L. Uma','Dr. M. Suresh','Prof. N. Deepa','Dr. O. Prasad','Prof. P. Geetha','Dr. Q. Arjun','Prof. R. Sangeetha','Dr. S. Babu','Prof. T. Hema','Dr. U. Murugan'];
+const STUDENT_NAMES = ['Arun K','Priya S','Karthik M','Divya R','Surya N','Anjali T','Vignesh P','Kavitha L','Arjun V','Nithya B','Manoj C','Swathi D','Deepak R','Lavanya M','Praveen A','Meena K','Harish S','Pooja G','Ramesh T','Sindhu V','Abishek J','Kiruthika N','Dinesh P','Preethi S','Ashwin R','Saranya M','Balaji K','Deepika L','Mani V','Sowmiya A','Yuvan S','Keerthi P','Sakthi R','Nila K','Vikas M','Anu D','Senthil T','Abinaya G','Praveen N','Haritha J'];
+
+// Generate 1000+ students
+const STUDENTS = [];
+let sCount = 1;
+DEPARTMENTS.forEach((dept, di) => {
+  const subj = SUBJECTS[dept];
+  for(let i=0; i<(di===0?200:di===1?180:di===2?160:di===3?150:di===4?180:130); i++){
+    const att = 55 + Math.random()*45;
+    STUDENTS.push({
+      regNo: `${dept.replace(' ','').toUpperCase().slice(0,3)}2021${String(sCount).padStart(3,'0')}`,
+      name: STUDENT_NAMES[i%STUDENT_NAMES.length] + ' ' + (Math.floor(i/STUDENT_NAMES.length)+1||''),
+      dept,
+      year: ['I','II','III','IV'][i%4],
+      att: parseFloat(att.toFixed(1)),
+      discipline: parseFloat((4 + Math.random()*6).toFixed(1)),
+      subjects: subj
+    });
+    sCount++;
+  }
+});
+
+// Generate staff
+const STAFF = DEPARTMENTS.map((dept, i) => ({
+  code: `STF${String(i*5+1).padStart(3,'0')}`,
+  name: STAFF_NAMES[i*5] || STAFF_NAMES[i],
+  dept,
+  classes: Math.floor(Math.random()*4)+2
+}));
+
+// Sample attendance for logged-in student
+function genAtt(days=60){
+  const records = [];
+  const d = new Date();
+  for(let i=days; i>=0; i--){
+    const dt = new Date(d);
+    dt.setDate(d.getDate()-i);
+    const day = dt.getDay();
+    if(day===0||day===6) continue;
+    const r = Math.random();
+    const status = r<0.72?'P':r<0.85?'A':'L';
+    records.push({
+      date: dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}),
+      subject: SUBJECTS.CSE[Math.floor(Math.random()*5)],
+      status,
+      type: Math.random()<0.3?'Lab':'Theory',
+      rawDate: dt
+    });
+  }
+  return records;
+}
+const MY_ATT = genAtt(70);
+const MY_PRESENT = MY_ATT.filter(r=>r.status==='P').length;
+const MY_TOTAL = MY_ATT.length;
+const MY_PCT = parseFloat(((MY_PRESENT/MY_TOTAL)*100).toFixed(1));
+const MY_PREDICTED = parseFloat((MY_PCT - (Math.random()*3+1)).toFixed(1));
+const DAYS_TO_80 = MY_PCT < 80 ? Math.ceil((0.8*MY_TOTAL - MY_PRESENT)/(1-0.8)) : 0;
+const BUNK_PCT = parseFloat(((MY_PRESENT/(MY_TOTAL+1))*100).toFixed(1));
+const DISCIPLINE = parseFloat((4+Math.random()*6).toFixed(1));
+
+// Notifications
+const NOTIFICATIONS = [
+  {title:'⚠️ Low Attendance Warning', body:'Your attendance is 72.5%. Attend next 6 days continuously to reach 80%.', time:'10 min ago', unread:true},
+  {title:'✅ Leave Approved', body:'Your leave from 28 Apr – 29 Apr has been approved by Prof. R. Priya.', time:'2 hrs ago', unread:true},
+  {title:'📊 Monthly Report', body:'Your April attendance summary is ready. You attended 18/25 classes.', time:'1 day ago', unread:false},
+  {title:'🔴 Risk Alert', body:'You have been absent 3 consecutive days. Parent has been notified.', time:'2 days ago', unread:false},
+  {title:'📝 Class Log Updated', body:'Data Structures class log for 30 Apr has been updated by your faculty.', time:'3 days ago', unread:false},
+];
+
+// Leave requests
+let LEAVE_REQUESTS = [
+  {student:'Arun K', regNo:'CSE2021001', type:'Medical Leave', from:'2025-04-28', to:'2025-04-29', reason:'Fever', status:'approved'},
+  {student:'Priya S', regNo:'CSE2021002', type:'OD', from:'2025-05-02', to:'2025-05-02', reason:'Inter-college fest', status:'pending'},
+  {student:'Karthik M', regNo:'ECE2021001', type:'Personal', from:'2025-05-03', to:'2025-05-04', reason:'Family function', status:'pending'},
+  {student:'Divya R', regNo:'CSE2021003', type:'Medical', from:'2025-04-25', to:'2025-04-26', reason:'Hospital visit', status:'rejected'},
+];
+
+const CLASS_LOGS = [
+  {date:'03 May 2025', subject:'Data Structures', topic:'AVL Tree Rotations', difficulty:'Hard'},
+  {date:'02 May 2025', subject:'DBMS', topic:'SQL Joins – Inner & Outer', difficulty:'Medium'},
+  {date:'01 May 2025', subject:'OS', topic:'Deadlock Detection', difficulty:'Hard'},
+  {date:'30 Apr 2025', subject:'CN', topic:'TCP/IP Protocol Suite', difficulty:'Medium'},
+  {date:'29 Apr 2025', subject:'Discrete Mathematics', topic:'Graph Theory – BFS', difficulty:'Easy'},
+];
+
+// Timetable
+const TIMETABLE = {
+  days: ['Monday','Tuesday','Wednesday','Thursday','Friday'],
+  periods: ['8:00–9:00','9:00–10:00','10:00–11:00','11:00–12:00','12:00–1:00','1:00–2:00','2:00–3:00','3:00–4:00'],
+  grid: [
+    ['Data Structures','DBMS','OS','–','Break','CN','Lab','Lab'],
+    ['Discrete Math','Data Structures','CN','DBMS','Break','OS','Lab','Lab'],
+    ['OS','CN','Data Structures','Discrete Math','Break','DBMS','–','–'],
+    ['DBMS','OS','Discrete Math','Data Structures','Break','CN','Lab','Lab'],
+    ['CN','Discrete Math','DBMS','OS','Break','Data Structures','–','–'],
+  ]
+};
+
+// App state
+let currentRole = 'student';
+let currentUser = {};
+let currentPanel = '';
+let chartInstances = {};
+let qrInterval = null;
+
+// ===================== NAVIGATION =====================
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id)?.classList.add('active');
+}
+
+function goLogin(role) {
+  currentRole = role;
+  const configs = {
+    student: { emoji:'🎓', badge:'STUDENT LOGIN', badgeColor:'rgba(59,130,246,0.15)', badgeText:'var(--primary)', label:'Register Number', demo:'student1 / password' },
+    staff: { emoji:'👨‍🏫', badge:'STAFF LOGIN', badgeColor:'rgba(16,185,129,0.15)', badgeText:'var(--emerald)', label:'Staff Code', demo:'staff1 / password' },
+    admin: { emoji:'👩‍💼', badge:'ADMIN LOGIN', badgeColor:'rgba(139,92,246,0.15)', badgeText:'var(--purple)', label:'College Code', demo:'admin / password' },
+    parent: { emoji:'👨‍👩‍👧', badge:'PARENT LOGIN', badgeColor:'rgba(245,158,11,0.15)', badgeText:'var(--amber)', label:'Parent ID', demo:'parent1 / password' },
+  };
+  const c = configs[role];
+  document.getElementById('loginEmoji').textContent = c.emoji;
+  document.getElementById('loginRoleBadge').textContent = c.badge;
+  document.getElementById('loginRoleBadge').style.background = c.badgeColor;
+  document.getElementById('loginRoleBadge').style.color = c.badgeText;
+  document.getElementById('loginLabel1').textContent = c.label;
+  document.getElementById('loginDemo').textContent = 'Demo: ' + c.demo;
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  showPage('login-page');
+}
+
+function doLogin() {
+  const u = document.getElementById('loginUser').value;
+  const p = document.getElementById('loginPass').value;
+  if(!u || !p) { alert('Please enter credentials.'); return; }
+
+  const roleMap = {
+    student: { name: 'Arun Kumar', regNo: u||'CSE2021001', dept:'CSE', avatar:'🎓', role:'Student' },
+    staff: { name: 'Dr. R. Priya', code: u, dept:'CSE', avatar:'👨‍🏫', role:'Staff' },
+    admin: { name: 'Principal Dr. V. Krishnan', avatar:'👩‍💼', role:'Administrator' },
+    parent: { name: 'Parent of Arun Kumar', avatar:'👨‍👩‍👧', role:'Parent' },
+  };
+  currentUser = roleMap[currentRole];
+
+  // Update sidebar
+  document.getElementById('sidebarAvatar').textContent = currentUser.avatar;
+  document.getElementById('sidebarName').textContent = currentUser.name;
+  document.getElementById('sidebarRole').textContent = currentUser.role;
+
+  buildSidebar();
+  initApp();
+  showPage('app-page');
+  document.getElementById('app').classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('app').style.display = 'flex';
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  if(document.getElementById(id)) document.getElementById(id).classList.add('active');
+  if(id !== 'app-page') document.getElementById('app').style.display = 'none';
+}
+
+function logout() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('app').classList.remove('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('landing').classList.add('active');
+  if(qrInterval) clearInterval(qrInterval);
+}
+
+// ===================== SIDEBAR BUILD =====================
+const NAV_CONFIG = {
+  student: [
+    { id:'s-dashboard', icon:'📊', label:'Dashboard' },
+    { id:'s-attendance', icon:'📅', label:'Attendance' },
+    { id:'s-leave', icon:'📝', label:'Leave / OD' },
+    { id:'s-timetable', icon:'🗓', label:'Timetable' },
+    { id:'s-predict', icon:'🤖', label:'AI Predictions' },
+    { id:'s-notifications', icon:'🔔', label:'Notifications' },
+  ],
+  staff: [
+    { id:'t-dashboard', icon:'📊', label:'Dashboard' },
+    { id:'t-mark', icon:'✅', label:'Mark Attendance' },
+    { id:'t-leave', icon:'📋', label:'Leave Requests' },
+    { id:'t-classlog', icon:'📚', label:'Class Log' },
+    { id:'t-analytics', icon:'📈', label:'Analytics' },
+  ],
+  admin: [
+    { id:'a-dashboard', icon:'📊', label:'Dashboard' },
+    { id:'a-students', icon:'🎓', label:'Students' },
+    { id:'a-staff', icon:'👨‍🏫', label:'Staff' },
+    { id:'a-reports', icon:'📄', label:'Reports' },
+  ],
+  parent: [
+    { id:'p-dashboard', icon:'📊', label:'Overview' },
+  ],
+};
+
+function buildSidebar() {
+  const nav = document.getElementById('sidebarNav');
+  const mobileNav = document.getElementById('mobileNavItems');
+  nav.innerHTML = '';
+  mobileNav.innerHTML = '';
+  const items = NAV_CONFIG[currentRole] || [];
+  items.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'nav-item' + (idx===0?' active':'');
+    div.setAttribute('data-panel', item.id);
+    div.innerHTML = `<span class="nav-icon">${item.icon}</span>${item.label}`;
+    div.onclick = () => navigateTo(item.id, item.label);
+    nav.appendChild(div);
+
+    const mb = document.createElement('div');
+    mb.className = 'mobile-nav-btn' + (idx===0?' active':'');
+    mb.setAttribute('data-panel', item.id);
+    mb.innerHTML = `<span class="ico">${item.icon}</span><span>${item.label}</span>`;
+    mb.onclick = () => navigateTo(item.id, item.label);
+    mobileNav.appendChild(mb);
+  });
+}
+
+function navigateTo(panelId, title) {
+  document.querySelectorAll('.nav-item, .mobile-nav-btn').forEach(n => {
+    n.classList.toggle('active', n.getAttribute('data-panel') === panelId);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('panel-' + panelId);
+  if(panel) { panel.classList.add('active'); currentPanel = panelId; }
+  document.getElementById('topbarTitle').textContent = title;
+  renderPanel(panelId);
+  closeSidebar();
+}
+
+// ===================== INIT APP =====================
+function initApp() {
+  // Date
+  const now = new Date();
+  document.getElementById('topbarDate').textContent = now.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+
+  // Set today's date on date inputs
+  const today = now.toISOString().split('T')[0];
+  ['leaveFrom','leaveTo','logDate','rptFrom','rptTo'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = today;
+  });
+
+  buildNotifPanel();
+  buildFullNotifList();
+  loadMarkList();
+
+  // Navigate to first panel
+  const firstPanel = NAV_CONFIG[currentRole]?.[0];
+  if(firstPanel) navigateTo(firstPanel.id, firstPanel.label);
+}
+
+// ===================== PANEL RENDERS =====================
+function renderPanel(id) {
+  const renders = {
+    's-dashboard': renderStudentDashboard,
+    's-attendance': renderStudentAttendance,
+    's-leave': renderStudentLeave,
+    's-timetable': renderTimetable,
+    's-predict': renderAIPredictions,
+    't-dashboard': renderStaffDashboard,
+    't-analytics': renderStaffAnalytics,
+    't-leave': renderStaffLeave,
+    't-classlog': renderClassLog,
+    'a-dashboard': renderAdminDashboard,
+    'a-students': renderAdminStudents,
+    'a-staff': renderAdminStaff,
+    'a-reports': renderAdminReports,
+    'p-dashboard': renderParentDashboard,
+  };
+  if(renders[id]) renders[id]();
+}
+
+// ===================== STUDENT DASHBOARD =====================
+function renderStudentDashboard() {
+  // Stats
+  document.getElementById('studentStats').innerHTML = `
+    <div class="stat-card blue"><span class="stat-icon">📊</span><div class="stat-label">Current Attendance</div><div class="stat-value blue">${MY_PCT}%</div><div class="stat-sub">Total Classes: ${MY_TOTAL}</div></div>
+    <div class="stat-card cyan"><span class="stat-icon">🔮</span><div class="stat-label">Predicted Attendance</div><div class="stat-value cyan">${MY_PREDICTED}%</div><div class="stat-sub">Next 30 Days</div></div>
+    <div class="stat-card green"><span class="stat-icon">✅</span><div class="stat-label">Classes Attended</div><div class="stat-value green">${MY_PRESENT}</div><div class="stat-sub">Present</div></div>
+    <div class="stat-card purple"><span class="stat-icon">📅</span><div class="stat-label">Classes Remaining</div><div class="stat-value purple">30</div><div class="stat-sub">Working Days</div></div>
+  `;
+
+  // Prediction Chart
+  destroyChart('chartPredict');
+  const ctx = document.getElementById('chartPredict').getContext('2d');
+  const pctArr = [MY_PCT];
+  let v = MY_PCT;
+  for(let i=0; i<5; i++) { v += (Math.random()>0.5?1:-1.5); pctArr.push(parseFloat(v.toFixed(1))); }
+  chartInstances['chartPredict'] = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels:['Now','Week 1','Week 2','Week 3','Week 4','Month End'],
+      datasets:[{
+        label:'Attendance %',
+        data: pctArr,
+        borderColor:'#3b82f6',
+        backgroundColor:'rgba(59,130,246,0.08)',
+        pointBackgroundColor:'#3b82f6',
+        pointBorderColor:'#1d4ed8',
+        borderWidth:2,
+        tension:0.4,
+        fill:true,
+        pointRadius:5
+      }]
+    },
+    options:{ responsive:true, plugins:{ legend:{labels:{color:'#94a3b8',font:{family:'Rajdhani'}}}}, scales:{ x:{ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,0.04)'}}, y:{min:50,max:100,ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,0.04)'}}} }
+  });
+
+  // Bunk Box
+  const safe = BUNK_PCT >= 80;
+  document.getElementById('bunkBox').innerHTML = `
+    <div class="bunk-indicator ${safe?'safe':'unsafe'}">${safe?'✅':'❌'}</div>
+    <div class="bunk-answer ${safe?'yes':'no'}">${safe?'YES':'NO'}</div>
+    <div class="bunk-caption">If you bunk today, your attendance will become <strong style="color:${safe?'var(--emerald)':'var(--red)'}">${BUNK_PCT}%</strong><br>${safe?'You can safely skip today.':'You cannot afford to miss class!'}</div>
+  `;
+
+  // AI Metrics
+  const riskLevel = MY_PCT >= 85 ? 'High' : MY_PCT >= 75 ? 'Medium' : 'Low';
+  const riskColor = MY_PCT >= 85 ? 'green' : MY_PCT >= 75 ? 'purple' : 'red';
+  document.getElementById('aiMetricsGrid').innerHTML = `
+    <div class="stat-card ${riskColor}" style="text-align:center;">
+      <div class="card-title" style="justify-content:center;margin-bottom:8px;"><span class="dot"></span>Days to 80%</div>
+      <div class="stat-value ${MY_PCT>=80?'green':riskColor}" style="font-size:36px;">${MY_PCT>=80?0:DAYS_TO_80}</div>
+      <div class="stat-sub">${MY_PCT>=80?'Target achieved!':'Attend consecutively'}</div>
+    </div>
+    <div class="stat-card blue" style="text-align:center;">
+      <div class="card-title" style="justify-content:center;margin-bottom:8px;"><span class="dot"></span>Discipline Score</div>
+      <div style="position:relative;width:90px;height:90px;margin:0 auto 8px;">
+        <svg width="90" height="90" viewBox="0 0 90 90">
+          <circle cx="45" cy="45" r="38" class="ring-bg" style="stroke:rgba(255,255,255,0.08);stroke-width:7;fill:none;"/>
+          <circle cx="45" cy="45" r="38" class="ring-fg" style="stroke:#3b82f6;stroke-width:7;fill:none;stroke-dasharray:${2*Math.PI*38};stroke-dashoffset:${2*Math.PI*38*(1-DISCIPLINE/10)};stroke-linecap:round;transform:rotate(-90deg);transform-origin:45px 45px;"/>
+        </svg>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+          <div style="font-family:var(--font-head);font-size:18px;color:var(--primary);">${DISCIPLINE}</div>
+          <div style="font-size:10px;color:var(--text-muted);">/10</div>
+        </div>
+      </div>
+    </div>
+    <div class="stat-card ${riskColor}" style="text-align:center;">
+      <div class="card-title" style="justify-content:center;margin-bottom:8px;"><span class="dot"></span>Risk Status</div>
+      <div style="font-size:32px;margin:8px 0;">${riskLevel==='High'?'🟢':riskLevel==='Medium'?'🟡':'🔴'}</div>
+      <div class="stat-value ${riskColor}" style="font-size:20px;">${riskLevel}</div>
+      <div class="stat-sub">${riskLevel==='Low'?'You are at risk!':'Your status is '+riskLevel.toLowerCase()}</div>
+    </div>
+    <div class="stat-card purple" style="text-align:center;">
+      <div class="card-title" style="justify-content:center;margin-bottom:8px;"><span class="dot"></span>Smart Suggestion</div>
+      <div style="font-size:22px;margin:8px 0;">💡</div>
+      <div style="font-size:12px;color:var(--text-dim);line-height:1.6;">${MY_PCT<80?'Attend next '+DAYS_TO_80+' days continuously to reach 80% safely.':'Keep it up! Maintain your current attendance.'}</div>
+    </div>
+  `;
+
+  // Recent Attendance
+  const tbody = document.getElementById('recentAttBody');
+  tbody.innerHTML = MY_ATT.slice(-8).reverse().map(r => `
+    <tr>
+      <td>${r.date}</td>
+      <td>${r.subject}</td>
+      <td><span class="status-badge ${r.status}">${r.status==='P'?'Present':r.status==='A'?'Absent':'Leave'}</span></td>
+      <td>${r.type}</td>
+    </tr>
+  `).join('');
+
+  // AI Insights
+  document.getElementById('aiInsights').innerHTML = `
+    <div class="ai-insight">
+      <div class="ai-insight-icon">🎯</div>
+      <div>
+        <div class="ai-insight-title">Smart Intervention</div>
+        <div class="ai-insight-text">You have been absent 2 times on Mondays this month. Pattern detected: <strong>Monday absenteeism</strong>. Plan to attend next 3 Mondays to fix the pattern.</div>
+      </div>
+    </div>
+    <div class="ai-insight">
+      <div class="ai-insight-icon">📉</div>
+      <div>
+        <div class="ai-insight-title">Subject Risk</div>
+        <div class="ai-insight-text">Your <strong>OS</strong> attendance is at 68%. You need to attend the next 4 OS classes without fail to reach 75%.</div>
+      </div>
+    </div>
+    <div class="ai-insight">
+      <div class="ai-insight-icon">🔔</div>
+      <div>
+        <div class="ai-insight-title">Parent Alert Triggered</div>
+        <div class="ai-insight-text">An automatic alert was sent to your parent on <strong>30 Apr 2025</strong> due to 3 consecutive absences.</div>
+      </div>
+    </div>
+  `;
+}
+
+// ===================== STUDENT ATTENDANCE =====================
+function renderStudentAttendance() {
+  // Heatmap
+  buildHeatmap();
+
+  // Subject chart
+  destroyChart('chartSubject');
+  const ctx = document.getElementById('chartSubject').getContext('2d');
+  const subjs = SUBJECTS.CSE;
+  const pcts = subjs.map(() => parseFloat((55+Math.random()*45).toFixed(1)));
+  chartInstances['chartSubject'] = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels: subjs,
+      datasets:[{
+        label:'Attendance %',
+        data: pcts,
+        backgroundColor: pcts.map(p => p>=80?'rgba(16,185,129,0.7)':p>=75?'rgba(245,158,11,0.7)':'rgba(239,68,68,0.7)'),
+        borderRadius:6
+      }]
+    },
+    options:{ responsive:true, plugins:{legend:{labels:{color:'#94a3b8'}}}, scales:{ x:{ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,0.04)'}}, y:{min:50,max:100,ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,0.04)'}}} }
+  });
+
+  // Full table
+  const tbody = document.getElementById('fullAttBody');
+  tbody.innerHTML = MY_ATT.slice(-30).reverse().map(r => `
+    <tr>
+      <td>${r.date}</td>
+      <td>${r.subject}</td>
+      <td>${STAFF_NAMES[Math.floor(Math.random()*5)]}</td>
+      <td><span class="status-badge ${r.status}">${r.status==='P'?'Present':r.status==='A'?'Absent':'Leave'}</span></td>
+      <td>${r.type}</td>
+    </tr>
+  `).join('');
+}
+
+function buildHeatmap() {
+  const months = ['Jan','Feb','Mar','Apr','May'];
+  let html = `<div style="display:flex;gap:20px;flex-wrap:wrap;">`;
+  months.forEach(month => {
+    html += `<div style="flex:1;min-width:160px;">
+      <div style="font-family:var(--font-head);font-size:11px;letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">${month.toUpperCase()}</div>
+      <div class="heatmap-grid">`;
+    const daysInMonth = 28 + Math.floor(Math.random()*3);
+    const startDay = Math.floor(Math.random()*5);
+    for(let i=0; i<startDay; i++) html += `<div class="heat-day empty"></div>`;
+    for(let d=1; d<=daysInMonth; d++) {
+      const r = Math.random();
+      const cls = r<0.72?'present':r<0.85?'absent':'leave';
+      html += `<div class="heat-day ${cls}" title="${d} ${month}: ${cls}"></div>`;
+    }
+    html += `</div></div>`;
+  });
+  html += `</div><div style="display:flex;gap:16px;margin-top:12px;">
+    <span style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:var(--emerald);border-radius:2px;display:inline-block;"></span>Present</span>
+    <span style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:var(--red);border-radius:2px;display:inline-block;"></span>Absent</span>
+    <span style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:var(--amber);border-radius:2px;display:inline-block;"></span>Leave</span>
+  </div>`;
+  document.getElementById('heatmapCal').innerHTML = html;
+}
+
+// ===================== STUDENT LEAVE =====================
+function renderStudentLeave() {
+  const tbody = document.getElementById('leaveHistBody');
+  tbody.innerHTML = LEAVE_REQUESTS.slice(0,2).map(r => `
+    <tr>
+      <td>${r.type}</td>
+      <td>${r.from}</td>
+      <td>${r.to}</td>
+      <td><span class="status-badge ${r.status}">${r.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+function applyLeave() {
+  const from = document.getElementById('leaveFrom').value;
+  const to = document.getElementById('leaveTo').value;
+  const type = document.getElementById('leaveType').value;
+  const reason = document.getElementById('leaveReason').value;
+  if(!reason) { alert('Please enter a reason.'); return; }
+  LEAVE_REQUESTS.unshift({ student:'Arun K', regNo:'CSE2021001', type, from, to, reason, status:'pending' });
+  alert('✅ Leave application submitted successfully!');
+  renderStudentLeave();
+}
+
+// ===================== TIMETABLE =====================
+function renderTimetable() {
+  const thead = document.getElementById('ttHead');
+  const tbody = document.getElementById('ttBody');
+  thead.innerHTML = `<tr><th>Period</th>${TIMETABLE.days.map(d=>`<th>${d}</th>`).join('')}</tr>`;
+  tbody.innerHTML = TIMETABLE.periods.map((p,pi) => `
+    <tr>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);">${p}</td>
+      ${TIMETABLE.days.map((_,di) => {
+        const subj = TIMETABLE.grid[di][pi];
+        const color = subj==='Break'?'var(--amber)':subj==='–'?'var(--text-muted)':'var(--text)';
+        const bg = subj==='Break'?'rgba(245,158,11,0.08)':subj==='Lab'?'rgba(59,130,246,0.08)':'transparent';
+        return `<td style="color:${color};background:${bg};font-size:13px;font-weight:${subj!=='–'&&subj!=='Break'?600:400};">${subj}</td>`;
+      }).join('')}
+    </tr>
+  `).join('');
+}
+
+// ===================== AI PREDICTIONS =====================
+function renderAIPredictions() {
+  document.getElementById('rootCauseBox').innerHTML = `
+    <div class="ai-insight">
+      <div class="ai-insight-icon">📆</div>
+      <div>
+        <div class="ai-insight-title">Day Pattern</div>
+        <div class="ai-insight-text">You are <strong>3x more likely</strong> to be absent on Mondays. Consider planning ahead.</div>
+      </div>
+    </div>
+    <div class="ai-insight">
+      <div class="ai-insight-icon">🕐</div>
+      <div>
+        <div class="ai-insight-title">After-Lunch Dip</div>
+        <div class="ai-insight-text">Attendance drops <strong>18%</strong> in post-lunch periods (1:00–2:00 PM).</div>
+      </div>
+    </div>
+    <div class="ai-insight">
+      <div class="ai-insight-icon">📚</div>
+      <div>
+        <div class="ai-insight-title">Subject Risk</div>
+        <div class="ai-insight-text"><strong>OS and DBMS</strong> have the highest absence rate for you – 32% combined absence.</div>
+      </div>
+    </div>
+  `;
+  calcRecovery();
+}
+
+let simChart = null;
+function runSimulation(type) {
+  destroyChart('chartSimulation');
+  const ctx = document.getElementById('chartSimulation').getContext('2d');
+  const weeks = ['W1','W2','W3','W4','W5','W6','W7','W8'];
+  let regular = [MY_PCT], bunk = [MY_PCT], smart = [MY_PCT];
+  for(let i=1;i<8;i++){
+    regular.push(parseFloat(Math.min(99,regular[i-1]+0.8).toFixed(1)));
+    bunk.push(parseFloat(Math.max(40,bunk[i-1]-1.5).toFixed(1)));
+    smart.push(parseFloat(Math.min(99,smart[i-1]+0.5).toFixed(1)));
+  }
+  const datasets = {
+    regular: [{label:'Regular Attendance',data:regular,borderColor:chartColor('emerald'),pointBackgroundColor:chartColor('emerald'),borderWidth:2,tension:0.4}],
+    bunk: [{label:'Frequent Bunks',data:bunk,borderColor:chartColor('red'),pointBackgroundColor:chartColor('red'),borderWidth:2,tension:0.4}],
+    smart: [{label:'Smart Strategy',data:smart,borderColor:chartColor('primary'),pointBackgroundColor:chartColor('primary'),borderWidth:2,tension:0.4}],
+  };
+  const allData = datasets.regular.concat(datasets.bunk).concat(datasets.smart);
+  chartInstances['chartSimulation'] = new Chart(ctx, {
+    type:'line',
+    data:{ labels:weeks, datasets: type==='regular'?datasets.regular:type==='bunk'?datasets.bunk:allData },
+    options:{ responsive:true, plugins:{legend:{labels:{color:'#94a3b8'}}}, scales:{ x:{ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,0.04)'}}, y:{min:40,max:100,ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,0.04)'}}} }
+  });
+  const msgs = {
+    regular: `<div class="ai-insight"><div class="ai-insight-icon">📈</div><div><div class="ai-insight-title">Regular Attendance Projection</div><div class="ai-insight-text">If you attend regularly, you will reach <strong>${regular[7]}%</strong> by end of semester. 🎉 Safe zone!</div></div></div>`,
+    bunk: `<div class="ai-insight"><div class="ai-insight-icon">⚠️</div><div><div class="ai-insight-title">Frequent Bunk Warning</div><div class="ai-insight-text">If you continue bunking, attendance drops to <strong>${bunk[7]}%</strong> — you will be <strong>detained!</strong> ❌</div></div></div>`,
+    smart: `<div class="ai-insight"><div class="ai-insight-icon">🧠</div><div><div class="ai-insight-title">Smart Strategy Result</div><div class="ai-insight-text">With smart leave planning, you can maintain <strong>${smart[7]}%</strong> while taking necessary breaks. Optimal!</div></div></div>`,
+  };
+  document.getElementById('simResult').innerHTML = msgs[type] || msgs.smart;
+}
+
+function calcRecovery() {
+  const target = parseFloat(document.getElementById('targetPct')?.value || 80);
+  const daysLeft = parseInt(document.getElementById('workingDaysLeft')?.value || 30);
+  const needed = Math.max(0, Math.ceil((target/100 * (MY_TOTAL + daysLeft) - MY_PRESENT)));
+  const possible = needed <= daysLeft;
+  const el = document.getElementById('recoveryResult');
+  if(!el) return;
+  el.innerHTML = `
+    <div class="ai-insight">
+      <div class="ai-insight-icon">${possible?'✅':'❌'}</div>
+      <div>
+        <div class="ai-insight-title">${possible?'Target Achievable':'Target Not Achievable'}</div>
+        <div class="ai-insight-text">
+          To reach <strong>${target}%</strong>, you need to attend <strong>${needed} more days</strong> out of ${daysLeft} remaining.<br>
+          ${possible?`<span style="color:var(--emerald)">✅ Possible! Attend ${needed} days out of next ${daysLeft} working days.</span>`:`<span style="color:var(--red)">❌ Even if you attend all ${daysLeft} remaining days, you can only reach ${parseFloat(((MY_PRESENT+daysLeft)/(MY_TOTAL+daysLeft)*100).toFixed(1))}%.</span>`}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ===================== STAFF DASHBOARD =====================
+function renderStaffDashboard() {
+  document.getElementById('staffStats').innerHTML = `
+    <div class="stat-card blue"><span class="stat-icon">👥</span><div class="stat-label">My Students</div><div class="stat-value blue">60</div><div class="stat-sub">CSE – III A</div></div>
+    <div class="stat-card green"><span class="stat-icon">✅</span><div class="stat-label">Present Today</div><div class="stat-value green">52</div><div class="stat-sub">86.7%</div></div>
+    <div class="stat-card red"><span class="stat-icon">❌</span><div class="stat-label">Absent Today</div><div class="stat-value red">8</div><div class="stat-sub">13.3%</div></div>
+    <div class="stat-card purple"><span class="stat-icon">📋</span><div class="stat-label">Pending Leaves</div><div class="stat-value purple">3</div><div class="stat-sub">Awaiting approval</div></div>
+  `;
+
+  destroyChart('chartStaffPie');
+  const ctx = document.getElementById('chartStaffPie').getContext('2d');
+  chartInstances['chartStaffPie'] = new Chart(ctx, {
+    type:'doughnut',
+    data:{
+      labels:['Present','Absent','Leave'],
+      datasets:[{data:[52,5,3],backgroundColor:['rgba(16,185,129,0.8)','rgba(239,68,68,0.8)','rgba(245,158,11,0.8)'],borderWidth:0,hoverOffset:8}]
+    },
+    options:{responsive:true, cutout:'65%', plugins:{legend:{labels:{color:'#94a3b8'}}}}
+  });
+
+  const pendingBody = document.getElementById('pendingLeaveBody');
+  pendingBody.innerHTML = LEAVE_REQUESTS.filter(r=>r.status==='pending').map((r,i) => `
+    <tr>
+      <td>${r.student}</td>
+      <td>${r.type}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;">${r.from}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn-success" onclick="staffLeaveAction(${i},'approved')">✓</button>
+        <button class="btn-danger" onclick="staffLeaveAction(${i},'rejected')">✗</button>
+      </td>
+    </tr>
+  `).join('');
+
+  destroyChart('chartWeekTrend');
+  const ctx2 = document.getElementById('chartWeekTrend').getContext('2d');
+  chartInstances['chartWeekTrend'] = new Chart(ctx2, {
+    type:'line',
+    data:{
+      labels:['Mon','Tue','Wed','Thu','Fri','Mon','Tue','Wed'],
+      datasets:[{label:'Class Attendance %',data:[88,92,85,90,87,89,91,86],borderColor:'#06b6d4',backgroundColor:'rgba(6,182,212,0.08)',borderWidth:2,tension:0.4,fill:true}]
+    },
+    options:{responsive:true, plugins:{legend:{labels:{color:'#94a3b8'}}}, scales:{ x:{ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,0.04)'}}, y:{min:70,max:100,ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,0.04)'}}} }
+  });
+}
+
+function staffLeaveAction(i, action) {
+  const pending = LEAVE_REQUESTS.filter(r=>r.status==='pending');
+  if(pending[i]) { pending[i].status = action; renderStaffDashboard(); renderStaffLeave(); }
+}
+
+// ===================== STAFF ANALYTICS =====================
+function renderStaffAnalytics() {
+  const risk = STUDENTS.filter(s=>s.dept==='CSE' && s.att<80).slice(0,10);
+  document.getElementById('riskStudentsStaff').innerHTML = risk.map(s => `
+    <div class="risk-bar">
+      <div class="risk-name">${s.name.slice(0,15)}</div>
+      <div class="risk-dept"><span class="chip dept-${s.dept.replace(' ','')}">${s.dept}</span></div>
+      <div class="risk-progress-wrap"><div class="risk-progress-fill" style="width:${s.att}%;background:${s.att<75?'var(--red)':s.att<80?'var(--amber)':'var(--emerald)'}"></div></div>
+      <div class="risk-pct">${s.att}%</div>
+    </div>
+  `).join('');
+
+  destroyChart('chartStaffSubj');
+  const ctx = document.getElementById('chartStaffSubj').getContext('2d');
+  const subjs = SUBJECTS.CSE;
+  chartInstances['chartStaffSubj'] = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels:subjs,
+      datasets:[
+        {label:'CSE-III-A',data:subjs.map(()=>parseFloat((65+Math.random()*30).toFixed(1))),backgroundColor:'rgba(59,130,246,0.7)',borderRadius:5},
+        {label:'CSE-III-B',data:subjs.map(()=>parseFloat((65+Math.random()*30).toFixed(1))),backgroundColor:'rgba(6,182,212,0.7)',borderRadius:5},
+      ]
+    },
+    options:{responsive:true, plugins:{legend:{labels:{color:'#94a3b8'}}}, scales:{ x:{ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,0.04)'}}, y:{min:50,max:100,ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,0.04)'}}} }
+  });
+}
+
+// ===================== STAFF LEAVE =====================
+function renderStaffLeave() {
+  document.getElementById('staffLeaveBody').innerHTML = LEAVE_REQUESTS.map((r,i) => `
+    <tr>
+      <td>${r.student}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;">${r.regNo}</td>
+      <td>${r.type}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;">${r.from}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;">${r.to}</td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">${r.reason}</td>
+      <td style="display:flex;gap:6px;">
+        ${r.status==='pending'?`<button class="btn-success" onclick="adminLeaveAction(${i},'approved')">✓</button><button class="btn-danger" onclick="adminLeaveAction(${i},'rejected')">✗</button>`:`<span class="status-badge ${r.status}">${r.status}</span>`}
+      </td>
+    </tr>
+  `).join('');
+}
+function adminLeaveAction(i, action){ LEAVE_REQUESTS[i].status=action; renderStaffLeave(); }
+
+// ===================== CLASS LOG =====================
+function renderClassLog() {
+  document.getElementById('classLogBody').innerHTML = CLASS_LOGS.map(l => `
+    <tr>
+      <td style="font-family:var(--font-mono);font-size:11px;">${l.date}</td>
+      <td>${l.subject}</td>
+      <td>${l.topic}</td>
+      <td><span class="status-badge ${l.difficulty.toLowerCase()==='easy'?'approved':l.difficulty.toLowerCase()==='medium'?'pending':'rejected'}">${l.difficulty}</span></td>
+    </tr>
+  `).join('');
+}
+function saveClassLog() { alert('✅ Class log saved successfully!'); renderClassLog(); }
+
+// ===================== MARK ATTENDANCE =====================
+function loadMarkList() {
+  const dept = document.getElementById('markDept')?.value || 'CSE';
+  const students = STUDENTS.filter(s=>s.dept===dept).slice(0,30);
+  const container = document.getElementById('markListContainer');
+  if(!container) return;
+  container.innerHTML = students.map((s,i) => `
+    <div class="student-list-row">
+      <div class="student-num">${s.regNo}</div>
+      <div class="student-nm">${s.name}</div>
+      <div class="student-dept">${s.year}</div>
+      <div class="att-btns">
+        <div class="att-btn P active-P" id="att-P-${i}" onclick="setAtt(${i},'P')">P</div>
+        <div class="att-btn A" id="att-A-${i}" onclick="setAtt(${i},'A')">A</div>
+        <div class="att-btn L" id="att-L-${i}" onclick="setAtt(${i},'L')">L</div>
+      </div>
+    </div>
+  `).join('');
+}
+function setAtt(i, status) {
+  ['P','A','L'].forEach(s => {
+    document.getElementById(`att-${s}-${i}`)?.classList.remove(`active-${s}`);
+  });
+  document.getElementById(`att-${status}-${i}`)?.classList.add(`active-${status}`);
+}
+function markAll(status) {
+  const dept = document.getElementById('markDept')?.value || 'CSE';
+  const count = STUDENTS.filter(s=>s.dept===dept).slice(0,30).length;
+  for(let i=0;i<count;i++) setAtt(i,status);
+}
+function saveAttendance() { alert('✅ Attendance saved successfully for ' + (document.getElementById('markDept')?.value||'CSE') + '!'); }
+
+// QR Timer
+let qrSecs = 299;
+function startQRTimer() {
+  if(qrInterval) clearInterval(qrInterval);
+  qrInterval = setInterval(() => {
+    qrSecs--;
+    if(qrSecs<0) qrSecs=299;
+    const m = Math.floor(qrSecs/60), s = qrSecs%60;
+    const el = document.getElementById('qrTimer');
+    if(el) el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }, 1000);
+}
+function regenerateQR() { qrSecs=299; alert('🔄 QR Code regenerated!'); }
+setTimeout(startQRTimer, 500);
+
+// ===================== ADMIN DASHBOARD =====================
+function renderAdminDashboard() {
+  const totalAtt = STUDENTS.reduce((a,s)=>a+s.att,0)/STUDENTS.length;
+  document.getElementById('adminStats').innerHTML = `
+    <div class="stat-card blue"><span class="stat-icon">🎓</span><div class="stat-label">Total Students</div><div class="stat-value blue">${STUDENTS.length}</div><div class="stat-sub">Across all departments</div></div>
+    <div class="stat-card green"><span class="stat-icon">📊</span><div class="stat-label">Avg Attendance</div><div class="stat-value green">${totalAtt.toFixed(1)}%</div><div class="stat-sub">All departments</div></div>
+    <div class="stat-card red"><span class="stat-icon">⚠️</span><div class="stat-label">At-Risk Students</div><div class="stat-value red">${STUDENTS.filter(s=>s.att<75).length}</div><div class="stat-sub">Below 75%</div></div>
+    <div class="stat-card purple"><span class="stat-icon">👨‍🏫</span><div class="stat-label">Total Staff</div><div class="stat-value purple">${STAFF.length}</div><div class="stat-sub">Active</div></div>
+  `;
+
+  destroyChart('chartDeptBar');
+  const ctx = document.getElementById('chartDeptBar').getContext('2d');
+  const deptAvgs = DEPARTMENTS.map(d => {
+    const students = STUDENTS.filter(s=>s.dept===d);
+    return students.length ? parseFloat((students.reduce((a,s)=>a+s.att,0)/students.length).toFixed(1)) : 0;
+  });
+  chartInstances['chartDeptBar'] = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels:DEPARTMENTS,
+      datasets:[{label:'Avg Attendance %',data:deptAvgs,backgroundColor:deptAvgs.map(v=>v>=80?'rgba(16,185,129,0.7)':v>=75?'rgba(245,158,11,0.7)':'rgba(239,68,68,0.7)'),borderRadius:6}]
+    },
+    options:{responsive:true, plugins:{legend:{labels:{color:'#94a3b8'}}}, scales:{ x:{ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,0.04)'}}, y:{min:50,max:100,ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,0.04)'}}} }
+  });
+
+  destroyChart('chartMonthLine');
+  const ctx2 = document.getElementById('chartMonthLine').getContext('2d');
+  chartInstances['chartMonthLine'] = new Chart(ctx2, {
+    type:'line',
+    data:{
+      labels:['Jan','Feb','Mar','Apr','May'],
+      datasets: DEPARTMENTS.map((d,i) => ({
+        label:d,
+        data:[70+Math.random()*20,70+Math.random()*20,70+Math.random()*20,70+Math.random()*20,70+Math.random()*20].map(v=>parseFloat(v.toFixed(1))),
+        borderColor:['#3b82f6','#06b6d4','#10b981','#8b5cf6','#f59e0b','#ef4444'][i],
+        borderWidth:2,tension:0.4,pointRadius:3
+      }))
+    },
+    options:{responsive:true, plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}}, scales:{ x:{ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,0.04)'}}, y:{min:50,max:100,ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,0.04)'}}} }
+  });
+
+  const risk = STUDENTS.filter(s=>s.att<75).slice(0,12);
+  document.getElementById('adminRiskPanel').innerHTML = risk.map(s => `
+    <div class="risk-bar">
+      <div class="risk-name">${s.name.slice(0,14)}</div>
+      <div class="risk-dept"><span class="chip dept-${s.dept.replace(' ','')}">${s.dept}</span></div>
+      <div class="risk-progress-wrap"><div class="risk-progress-fill" style="width:${s.att}%;background:${s.att<70?'var(--red)':s.att<75?'var(--amber)':'var(--emerald)'}"></div></div>
+      <div class="risk-pct">${s.att}%</div>
+      <span class="status-badge ${s.att<70?'low':'medium'}">${s.att<70?'CRITICAL':'AT RISK'}</span>
+    </div>
+  `).join('');
+}
+
+// ===================== ADMIN STUDENTS =====================
+function renderAdminStudents() {
+  filterStudents();
+}
+function filterStudents() {
+  const search = document.getElementById('studentSearch')?.value.toLowerCase()||'';
+  const dept = document.getElementById('deptFilter')?.value||'';
+  let filtered = STUDENTS.filter(s =>
+    (!search || s.name.toLowerCase().includes(search) || s.regNo.toLowerCase().includes(search)) &&
+    (!dept || s.dept===dept)
+  ).slice(0,50);
+  document.getElementById('adminStudentBody').innerHTML = filtered.map(s => `
+    <tr>
+      <td style="font-family:var(--font-mono);font-size:11px;">${s.regNo}</td>
+      <td style="font-weight:600;">${s.name}</td>
+      <td><span class="chip dept-${s.dept.replace(' ','').replace('Security','CYB')}">${s.dept}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:60px;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;"><div style="width:${s.att}%;height:100%;background:${s.att>=80?'var(--emerald)':s.att>=75?'var(--amber)':'var(--red)'};border-radius:3px;"></div></div>
+          <span style="font-family:var(--font-mono);font-size:12px;">${s.att}%</span>
+        </div>
+      </td>
+      <td style="font-family:var(--font-mono);font-size:12px;">${s.discipline}/10</td>
+      <td><span class="status-badge ${s.att>=80?'approved':s.att>=75?'pending':'rejected'}">${s.att>=80?'SAFE':s.att>=75?'WATCH':'RISK'}</span></td>
+    </tr>
+  `).join('');
+}
+function showAddStudent() { alert('Add Student form — connect to backend API to save to MongoDB.'); }
+
+// ===================== ADMIN STAFF =====================
+function renderAdminStaff() {
+  document.getElementById('adminStaffBody').innerHTML = STAFF.map(s => `
+    <tr>
+      <td style="font-family:var(--font-mono);font-size:12px;">${s.code}</td>
+      <td style="font-weight:600;">${s.name}</td>
+      <td><span class="chip dept-${s.dept.replace(' ','')}">${s.dept}</span></td>
+      <td>${s.classes}</td>
+      <td><span class="status-badge approved">ACTIVE</span></td>
+    </tr>
+  `).join('');
+}
+
+// ===================== ADMIN REPORTS =====================
+function renderAdminReports() {
+  const totalAtt = (STUDENTS.reduce((a,s)=>a+s.att,0)/STUDENTS.length).toFixed(1);
+  document.getElementById('quickStatsPanel').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      ${[
+        ['Total Students', STUDENTS.length, 'blue'],
+        ['Avg Attendance', totalAtt+'%', 'green'],
+        ['Risk Students', STUDENTS.filter(s=>s.att<75).length, 'red'],
+        ['Depts Active', DEPARTMENTS.length, 'purple'],
+      ].map(([l,v,c])=>`
+        <div class="stat-card ${c}" style="padding:14px;">
+          <div class="stat-label">${l}</div>
+          <div class="stat-value ${c}" style="font-size:22px;">${v}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+function exportReport(type) { alert(`📊 ${type.toUpperCase()} report generation would download here — connect to backend for full export.`); }
+
+// ===================== PARENT DASHBOARD =====================
+function renderParentDashboard() {
+  document.getElementById('parentStats').innerHTML = `
+    <div class="stat-card blue"><span class="stat-icon">🎓</span><div class="stat-label">Child Name</div><div class="stat-value blue" style="font-size:18px;">Arun Kumar</div><div class="stat-sub">CSE – III Year</div></div>
+    <div class="stat-card cyan"><span class="stat-icon">📊</span><div class="stat-label">Current Attendance</div><div class="stat-value cyan">${MY_PCT}%</div><div class="stat-sub">Total: ${MY_TOTAL} classes</div></div>
+    <div class="stat-card ${MY_PCT>=80?'green':'red'}"><span class="stat-icon">🎯</span><div class="stat-label">Status</div><div class="stat-value ${MY_PCT>=80?'green':'red'}">${MY_PCT>=80?'SAFE':'AT RISK'}</div><div class="stat-sub">${MY_PCT>=80?'Above threshold':'Below 80%'}</div></div>
+    <div class="stat-card purple"><span class="stat-icon">📅</span><div class="stat-label">Leaves This Month</div><div class="stat-value purple">2</div><div class="stat-sub">1 approved, 1 pending</div></div>
+  `;
+
+  destroyChart('chartParentTrend');
+  const ctx = document.getElementById('chartParentTrend').getContext('2d');
+  chartInstances['chartParentTrend'] = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels:['Jan','Feb','Mar','Apr','May'],
+      datasets:[{label:'Attendance %',data:[78,75,72,74,MY_PCT],borderColor:'#8b5cf6',backgroundColor:'rgba(139,92,246,0.08)',borderWidth:2,tension:0.4,fill:true,pointRadius:5}]
+    },
+    options:{responsive:true, plugins:{legend:{labels:{color:'#94a3b8'}}}, scales:{ x:{ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,0.04)'}}, y:{min:50,max:100,ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,0.04)'}}} }
+  });
+
+  document.getElementById('parentAlerts').innerHTML = `
+    <div class="notif-item unread">
+      <div class="notif-item-title">⚠️ Low Attendance Warning</div>
+      <div class="notif-item-body">Your child's attendance is ${MY_PCT}%. Immediate attention needed.</div>
+      <div class="notif-item-time">10 min ago</div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-item-title">✅ Leave Approved</div>
+      <div class="notif-item-body">Medical leave from 28–29 Apr approved.</div>
+      <div class="notif-item-time">2 hrs ago</div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-item-title">📊 Monthly Report</div>
+      <div class="notif-item-body">April attendance: 18/25 classes attended.</div>
+      <div class="notif-item-time">1 day ago</div>
+    </div>
+  `;
+
+  document.getElementById('parentLeaveBody').innerHTML = LEAVE_REQUESTS.slice(0,2).map(r=>`
+    <tr>
+      <td>${r.type}</td>
+      <td>${r.from}</td>
+      <td>${r.to}</td>
+      <td><span class="status-badge ${r.status}">${r.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+// ===================== NOTIFICATIONS =====================
+function buildNotifPanel() {
+  document.getElementById('notifList').innerHTML = NOTIFICATIONS.map(n => `
+    <div class="notif-item ${n.unread?'unread':''}">
+      <div class="notif-item-title">${n.title}</div>
+      <div class="notif-item-body">${n.body}</div>
+      <div class="notif-item-time">${n.time}</div>
+    </div>
+  `).join('');
+}
+function buildFullNotifList() {
+  const el = document.getElementById('fullNotifList');
+  if(el) el.innerHTML = NOTIFICATIONS.map(n => `
+    <div class="notif-item ${n.unread?'unread':''}">
+      <div class="notif-item-title">${n.title}</div>
+      <div class="notif-item-body">${n.body}</div>
+      <div class="notif-item-time">${n.time}</div>
+    </div>
+  `).join('');
+}
+
+function toggleNotif() {
+  const panel = document.getElementById('notifPanel');
+  const overlay = document.getElementById('overlay');
+  panel.classList.toggle('open');
+  overlay.classList.toggle('active');
+}
+function closeNotif() {
+  document.getElementById('notifPanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('active');
+}
+
+// ===================== SIDEBAR MOBILE =====================
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('active');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('active');
+}
+
+// ===================== UTILITIES =====================
+function destroyChart(id) {
+  if(chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+}
+function chartColor(name) {
+  return {primary:'#3b82f6',cyan:'#06b6d4',emerald:'#10b981',purple:'#8b5cf6',amber:'#f59e0b',red:'#ef4444'}[name]||'#3b82f6';
+}
+
+// ===================== INIT =====================
+document.addEventListener('DOMContentLoaded', () => {
+  showPage('landing');
+  document.getElementById('app').style.display = 'none';
+});
+</script>
+</body>
+</html>
